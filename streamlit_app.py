@@ -1,5 +1,5 @@
-import pandas as pd
 import streamlit as st
+import pandas as pd
 import numpy as np
 import plotly.express as px
 
@@ -22,7 +22,7 @@ def load_excel(file):
 
 
 # Function to detect failure based on input failure rate and randomization 
-def failure_detection(input_dict, n_iteration, column):
+def failure_detection(input_dict, n_iteration):
     
     df = pd.DataFrame(input_dict)
     df['Year'] = [i for i in range(1, len(df) + 1)]
@@ -44,12 +44,12 @@ def failure_detection(input_dict, n_iteration, column):
                 df_copy.loc[i, f'Failure_status_{column_name}'] = "Failed"
 
                 for j, k in enumerate(range(i + 1, len(df_copy))):
-                    df_copy.loc[k, column_name] = input_dict[j % len(input_dict)] *100
+                    df_copy.loc[k, column_name] = input_dict[column_name][j % len(input_dict[column_name])] * 100
 
     return df_copy
 
 # Function to check failure from Number of turbine in the project 
-st.cache_data
+@st.cache_data
 def run_multiple_iterations(input_dict,n_iteration):
     df_result = pd.DataFrame()
     for iteration in range(1, n_iteration + 1):
@@ -126,4 +126,3 @@ def main():
 
 if __name__ =='__main__':
     main()
-
