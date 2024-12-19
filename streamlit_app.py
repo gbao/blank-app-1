@@ -48,7 +48,7 @@ def failure_detection(input_dict, n_iteration, column):
     return df_copy
 
 # Function to check failure from Number of turbine in the project 
-@st.cache_data
+@st.cache
 def run_multiple_iterations(input_dict,n_iteration):
     df_result = pd.DataFrame()
     for iteration in range(1, n_iteration + 1):
