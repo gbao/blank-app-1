@@ -45,7 +45,8 @@ def failure_detection(input_dict, n_iteration):
 
                 for j, k in enumerate(range(i + 1, len(df_copy))):
                     df_copy.loc[k, column_name] = input_dict[column_name][j % len(input_dict[column_name])] * 100
-
+    columns  = ['Year'] + [col for col in df_copy.columns if col != 'Year']
+    df_copy = df_copy[columns]
     return df_copy
 
 # Function to check failure from Number of turbine in the project 
