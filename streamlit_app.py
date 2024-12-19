@@ -54,7 +54,7 @@ def run_multiple_iterations(input_dict,n_iteration):
     df_result = pd.DataFrame()
     for iteration in range(1, n_iteration + 1):
         # Run the failure detection function
-        temp_df = failure_detection(input_dict, n_iteration,column_name)
+        temp_df = failure_detection(input_dict, n_iteration)
 
         if df_result.empty:
             df_result = temp_df.copy()
