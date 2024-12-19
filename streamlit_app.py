@@ -11,78 +11,80 @@ def load_excel(file):
         st.error(f"Error reading file: {e}")
         return None
     
-    if 'Blade' not in df.columns:
-        st.error("Excel file must contain a 'Blade' column")
+    required_columns = ['Blade','Blade Bearing','Generator','Main Bearing','Transformer','Yaw Ring' ]
+
+    if not all(col in df.columns for col in required_columns):
+        st.error(f"Excel file must contain columns: {', '.join(required_columns)}")
         return None
     
     return df
 
-# Function to extract the input list from the 'Blade' column
-def get_input_list_from_df(df, column_name="Blade"):
-    return df[column_name].tolist()
+
 
 # Function to detect failure based on input failure rate and randomization 
-def failure_detection(input_list, n_iteration, column_name="Blade"):
+def failure_detection(input_dict, n_iteration, column):
     
-    df = pd.DataFrame(input_list, columns=[column_name])
-    df["Blade"] = df["Blade"]*100
+    df = pd.DataFrame(input_dict)
     df['Year'] = [i for i in range(1, len(df) + 1)]
-    df['Random'] = None
-    df['Failure_status'] = None
+
+    for column_name in input_dict.keys():
+        df[f'Random_{column_name}'] = None
+        df[f'Failure_status_{column_name}'] = None
+
 
     df_copy = df.copy()
     for i in range(0, len(df_copy)):
-        df_copy.loc[i, 'Random'] = np.random.rand() * 100
-        if df_copy.loc[i, "Random"] > df_copy.loc[i, column_name]:
-            df_copy.loc[i, "Failure_status"] = "No_failure"
-        else:
-            df_copy.loc[i, "Failure_status"] = "Failed"
+        for column_name in input_dict.keys():
+            random_value = np.random.rand() * 100
+            df_copy.loc[i ,f'Random_{column_name}'] = random_value
 
-            for j, k in enumerate(range(i + 1, len(df_copy))):
-                df_copy.loc[k, column_name] = input_list[j % len(input_list)]
+            if random_value > df_copy.loc[i, column_name] * 100:
+                df_copy.loc[i, f'Failure_status_{column_name}'] = "No_failure"
+            else:
+                df_copy.loc[i, f'Failure_status_{column_name}'] = "Failed"
+
+                for j, k in enumerate(range(i + 1, len(df_copy))):
+                    df_copy.loc[k, column_name] = input_dict[j % len(input_dict)] *100
 
     return df_copy
 
 # Function to check failure from Number of turbine in the project 
 @st.cache_data
-def run_multiple_iterations(input_list,n_iteration, column_name="Blade"):
+def run_multiple_iterations(input_dict,n_iteration):
     df_result = pd.DataFrame()
     for iteration in range(1, n_iteration + 1):
         # Run the failure detection function
-        temp_df = failure_detection(input_list, n_iteration, column_name=column_name)
+        temp_df = failure_detection(input_dict, n_iteration,column_name)
 
-        # Dynamically create a new column name for failure status
-        failure_status_col = f"failure_status_{iteration}"
-        temp_df = temp_df.rename(columns={"Failure_status": failure_status_col})
-
-        # Add the results to df_result for each iteration
         if df_result.empty:
-            df_result = temp_df[['Year', column_name, 'Random', failure_status_col]].copy()
+            df_result = temp_df.copy()
         else:
-            df_result[f'Blade_{iteration}'] = temp_df[column_name]
-            df_result[f'Random_{iteration}'] = temp_df['Random']  # Add Random values too (optional)
-            df_result[failure_status_col] = temp_df[failure_status_col]
-
+            for column_name in input_dict.keys():
+                df_result[f'{column_name}_{iteration}'] = temp_df[column_name]
+                df_result[f'Random_{column_name}_{iteration}'] = temp_df[f'Random_{column_name}']
+                df_result[f'Failure_status_{column_name}_{iteration}'] = temp_df[f'Failure_status_{column_name}']
     return df_result
 
 # Function to provide the result how many turbine failed per year 
-def count_failed_turbines_per_year(df, n_iterations):
-    # Create an empty list to store the failure counts for each year
-    failure_count_per_year = []
+def count_failed_turbines_per_year(df,input_dict, n_iterations):
+    result = {}
+    for column_name in input_dict.keys():
+        failure_counts = []
+        for index, row in df.iterrows():
+            failed_count = 0
+            for iteration in range(1, n_iterations + 1):
+                failure_status_col = f'Failure_status_{column_name}_{iteration}'
+                if row[failure_status_col] == "Failed":
+                    failed_count += 1
+            failure_counts.append(failed_count)
 
-    # Iterate over each row (representing each year)
-    for index, row in df.iterrows():
-        # Count failures in each year (row) across all failure status columns
-        failed_count = 0
-        for iteration in range(1, n_iterations + 1):
-            failure_status_col = f"failure_status_{iteration}"
-            if row[failure_status_col] == "Failed":
-                failed_count += 1
-        failure_count_per_year.append(failed_count)
+        result[column_name] = failure_counts
 
-    # Add the failure count to the dataframe as a new column
-    df['Failed_Turbines'] = failure_count_per_year
-    return df[['Year', 'Failed_Turbines']]
+    # Combine results into a single dataframe
+    final_df = pd.DataFrame(result)
+    final_df['Year'] = df['Year']
+    final_df['Failed_Turbines'] = final_df.sum(axis=1)
+    return final_df
 
 # Streamlit app starts here
 def main():
@@ -100,7 +102,7 @@ def main():
             st.write(df.head())
 
             # Extract the Blade column and convert it to a list
-            input_list = get_input_list_from_df(df, column_name= "Blade")
+            input_dict = {col: df[col].tolist() for col in ['Blade', 'Blade Bearing', 'Generator', 'Main Bearing', 'Transformer', 'Yaw Ring']}
 
             # Allow user to specify the number of turbines (iterations)
             n_iterations = st.number_input("Enter the number of turbines", min_value=1, max_value=100, value=30)
@@ -108,7 +110,7 @@ def main():
 
             # Run the turbine failure detection
             st.write("Running failure detection...")
-            df_result = run_multiple_iterations(input_list, column_name="Blade", n_iteration=n_iterations)
+            df_result = run_multiple_iterations(input_dict, column_name="Blade", n_iteration=n_iterations)
 
             # Count failed turbines per year
             failure_per_year_df = count_failed_turbines_per_year(df_result, n_iterations)
