@@ -1,8 +1,6 @@
-import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-
 
 #Function to process the uploaded Excel file
 def load_excel(file):
@@ -111,10 +109,10 @@ def main():
 
             # Run the turbine failure detection
             st.write("Running failure detection...")
-            df_result = run_multiple_iterations(input_dict, column_name="Blade", n_iteration=n_iterations)
+            df_result = run_multiple_iterations(input_dict, n_iteration=n_iterations)
 
             # Count failed turbines per year
-            failure_per_year_df = count_failed_turbines_per_year(df_result, n_iterations)
+            failure_per_year_df = count_failed_turbines_per_year(df_result,input_dict,n_iterations)
 
             # Show the resulting dataframe
             st.subheader("Failure Counts Per Year")
@@ -127,3 +125,4 @@ def main():
 
 if __name__ =='__main__':
     main()
+
