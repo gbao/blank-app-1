@@ -74,7 +74,7 @@ def count_failed_turbines_per_year(df,input_dict, n_iterations):
             failed_count = 0
             for iteration in range(1, n_iterations + 1):
                 failure_status_col = f'Failure_status_{column_name}_{iteration}'
-                if row[failure_status_col] == "Failed":
+                if failure_status_col in df.columns and row[failure_status_col] == "Failed":
                     failed_count += 1
             failure_counts.append(failed_count)
 
