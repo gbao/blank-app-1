@@ -135,7 +135,7 @@ def main():
             st.write(df.head())
 
             # Extract the Blade column and convert it to a list
-            input_dict = {col: df[col].tolist() for col in ['Blade', 'Blade Bearing', 'Generator', 'Main Bearing', 'Transformer', 'Yaw Ring']}
+            input_dict = {col: (df[col] * 100).tolist() for col in ['Blade', 'Blade Bearing', 'Generator', 'Main Bearing', 'Transformer', 'Yaw Ring']}
 
             # Allow user to specify the number of turbines (iterations)
             n_iterations = st.number_input("Enter the number of turbines of your project", min_value=1, max_value=150, value=30)
