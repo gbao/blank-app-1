@@ -136,7 +136,7 @@ def summarize_failures_by_turbine(df, input_dict, no_of_turbines):
         )
 
     # Optionally, add a total failures column
-    summary["Total_Failures"] = summary.sum(axis=1)
+    summary["Total_Failure"] = summary.sum(axis=1)
 
     return summary
 
