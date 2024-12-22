@@ -107,7 +107,7 @@ def failure_summary_table(df,input_dict):
     summary = pd.DataFrame(index=df.index.unique())
 
     for component in input_dict:
-        component_columns = [col for col in df.columns if f"Failure_status_{component}" in col]
+        component_columns = [col for col in df.columns if f"Failure_status_{component}_turbine" in col]
         
         summary[component] = df[component_columns].apply(lambda row: (row == "Failed").sum(), axis = 1)
     
