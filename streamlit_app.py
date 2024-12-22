@@ -173,12 +173,11 @@ def main():
 
             export_option = st.checkbox("Do you want to export the results to an Excel file?")
             if export_option:
-                export_file = pd.ExcelWriter("turbine_failure_analysis.xlsx", engine="openpyxl")
-
-                # Export all relevant DataFrames to separate sheets
-                failure_per_year_df.to_excel(export_file, sheet_name="Total Failures")
-                
-                export_file.save()
+                # Use the `with` statement to handle saving automatically
+                with pd.ExcelWriter("turbine_failure_analysis.xlsx", engine="openpyxl") as export_file:
+                    # Export all relevant DataFrames to separate sheets
+                    failure_per_year_df.to_excel(export_file, sheet_name="Total Failures")
+    
                 st.success("Excel file exported successfully!")
 
                 # Provide download link
