@@ -1,7 +1,6 @@
 streamlit
-plotly
+plotly>=5.0
 numpy
 pandas
 openpyxl
-plotly.graph_objects
 plotly.express
