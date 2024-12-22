@@ -75,7 +75,7 @@ def failure_detection(input_dict):
     return df_copy
 
 # Function to check failure from Number of turbine in the project 
-@st.cache_data
+
 def failure_detection_multiple_turbines(input_dict, No_of_turbine):
     # Create an empty DataFrame to hold all turbines' results
     all_turbines_df = pd.DataFrame()
