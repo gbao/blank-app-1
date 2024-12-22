@@ -140,36 +140,74 @@ def main():
             # Allow user to specify the number of turbines (iterations)
             n_iterations = st.number_input("Enter the number of turbines of your project", min_value=1, max_value=150, value=30)
 
+            # Create a button to trigger a new run of failure detection
+            rerun_button = st.button("Re-run Failure Detection")
 
-            # Run the turbine failure detection
-            st.write("Running failure detection...")
-            df_result = failure_detection_multiple_turbines(input_dict, No_of_turbine=n_iterations)
+            # Initialize session state if not yet initialized
+            if "df_result" not in st.session_state:
+                st.session_state.df_result = None
 
-            # Count failed turbines per year
-            failure_per_component_per_year_df = failure_summary_table(df_result,input_dict)
-            failure_per_year_df = sum_failure_per_year(failure_per_component_per_year_df)
+            if rerun_button or st.session_state.df_result is None:
+                # Run the turbine failure detection
+                st.write("Running failure detection...")
+                df_result = failure_detection_multiple_turbines(input_dict, No_of_turbine=n_iterations)
 
-            # Show the resulting dataframe
-            st.subheader("Failure Counts Per Year")
-            st.write(df_result)
-            st.write(failure_per_year_df)
+                # Store the result in session state so it can be reused
+                st.session_state.df_result = df_result
 
-            # Plot the results
-            fig = px.bar(failure_per_year_df, x=failure_per_year_df.index, y=failure_per_year_df.columns[:-1], title="Stacked Bar Chart of Failures by Component",
-                        labels={"value": "Failures", "Year": "Year", "variable": "Component"}, 
-                        barmode='stack')
-            fig.add_trace(
-                go.Scatter(
-                    x=failure_per_year_df.index,
-                    y=failure_per_year_df["Total_Failure"],
-                    mode="text",
-                    text=failure_per_year_df["Total_Failure"],
-                    textposition="top center",
-                    showlegend=False
+                # Count failed turbines per year
+                failure_per_component_per_year_df = failure_summary_table(df_result, input_dict)
+                failure_per_year_df = sum_failure_per_year(failure_per_component_per_year_df)
+
+                # Show the resulting dataframe
+                st.subheader("Failure Counts Per Year")
+                st.write(df_result)
+                st.write(failure_per_year_df)
+
+                # Plot the results
+                fig = px.bar(failure_per_year_df, x=failure_per_year_df.index, y=failure_per_year_df.columns[:-1], title="Stacked Bar Chart of Failures by Component",
+                            labels={"value": "Failures", "Year": "Year", "variable": "Component"}, 
+                            barmode='stack')
+                fig.add_trace(
+                    go.Scatter(
+                        x=failure_per_year_df.index,
+                        y=failure_per_year_df["Total_Failure"],
+                        mode="text",
+                        text=failure_per_year_df["Total_Failure"],
+                        textposition="top center",
+                        showlegend=False
+                    )
                 )
-            )
-            st.plotly_chart(fig)
+                st.plotly_chart(fig)
 
+            else:
+                # If no new run is triggered, use the stored result
+                df_result = st.session_state.df_result
+
+                # Count failed turbines per year
+                failure_per_component_per_year_df = failure_summary_table(df_result, input_dict)
+                failure_per_year_df = sum_failure_per_year(failure_per_component_per_year_df)
+
+                # Show the resulting dataframe
+                st.subheader("Failure Counts Per Year")
+                st.write(df_result)
+                st.write(failure_per_year_df)
+
+                # Plot the results
+                fig = px.bar(failure_per_year_df, x=failure_per_year_df.index, y=failure_per_year_df.columns[:-1], title="Stacked Bar Chart of Failures by Component",
+                            labels={"value": "Failures", "Year": "Year", "variable": "Component"}, 
+                            barmode='stack')
+                fig.add_trace(
+                    go.Scatter(
+                        x=failure_per_year_df.index,
+                        y=failure_per_year_df["Total_Failure"],
+                        mode="text",
+                        text=failure_per_year_df["Total_Failure"],
+                        textposition="top center",
+                        showlegend=False
+                    )
+                )
+                st.plotly_chart(fig)
 
             export_option = st.checkbox("Do you want to export the results to an Excel file?")
             if export_option:
@@ -189,5 +227,5 @@ def main():
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
 
-if __name__ =='__main__':
+if __name__ == '__main__':
     main()
