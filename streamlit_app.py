@@ -137,8 +137,8 @@ def summarize_failures_by_turbine(df, input_dict, no_of_turbines):
 
     # Optionally, add a total failures column
     summary["Total_Failure"] = summary.sum(axis=1)
-    summary.loc['Total'] = summary.sum(axis=0)  
-    return summary
+    a = summary.loc['Total'] = summary.sum(axis=0)  
+    return summary,a
 
 
 # Function to provide result of total failure per year
