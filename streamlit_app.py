@@ -137,7 +137,7 @@ def summarize_failures_by_turbine(df, input_dict, no_of_turbines):
 
     # Optionally, add a total failures column
     summary["Total_Failure"] = summary.sum(axis=1)
-    summary.loc['Total'] = summary.sum(axis=0)  
+    
     return summary
 
 
@@ -221,7 +221,7 @@ def main():
                 fig1 = px.bar(failure_per_turbine_per_year, y=failure_per_turbine_per_year.columns[:-1], title="Stacked Bar Chart of number of failures per Turbine",
                             labels={"value": "Failures per Turbine", "Year": "Year", "variable": "Turbine"}, 
                             barmode='stack')
-                fig1.update_yaxes(range=[0, 100])
+         
                 fig1.add_trace(
                     go.Scatter(
                         x=failure_per_turbine_per_year.index,
