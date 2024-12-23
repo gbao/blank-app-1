@@ -137,8 +137,8 @@ def summarize_failures_by_turbine(df, input_dict, no_of_turbines):
 
     # Optionally, add a total failures column
     summary["Total_Failure"] = summary.sum(axis=1)
-    a = summary.loc['Total'] = summary.sum(axis=0)  
-    return summary,a
+    summary.loc['Total'] = summary.sum(axis=0)  
+    return summary
 
 
 # Function to provide result of total failure per year
@@ -218,7 +218,7 @@ def main():
                 st.plotly_chart(fig)
 
                 #Plot the second result
-                fig1 = px.bar(failure_per_turbine_per_year, y=failure_per_turbine_per_year.columns[:-1], title="Stacked Bar Chart of number of failures per Turbine",
+                fig1 = px.bar(failure_per_turbine_per_year[:-1], y=failure_per_turbine_per_year.columns[:-1], title="Stacked Bar Chart of number of failures per Turbine",
                             labels={"value": "Failures per Turbine", "Year": "Year", "variable": "Turbine"}, 
                             barmode='stack')
                 fig1.add_trace(
